@@ -141,7 +141,8 @@ public class MiniAccumuloCluster {
     
     ArrayList<String> argList = new ArrayList<String>();
     
-    argList.addAll(Arrays.asList(javaBin, "-cp", classpath, className));
+    argList.addAll(Arrays.asList(javaBin, "-cp", classpath, "-Xmx128m", "-XX:+UseConcMarkSweepGC", "-XX:CMSInitiatingOccupancyFraction=75",
+        className));
     argList.addAll(Arrays.asList(args));
     
     ProcessBuilder builder = new ProcessBuilder(argList);
@@ -159,6 +160,11 @@ public class MiniAccumuloCluster {
     lw.start();
 
     return process;
+  }
+
+  private void appendProp(FileWriter fileWriter, Property key, String value, Map<String,String> siteConfig) throws IOException {
+    if (!siteConfig.containsKey(key.getKey()))
+      fileWriter.append("<property><name>" + key.getKey() + "</name><value>" + value + "</value></property>\n");
   }
 
   /**
@@ -202,12 +208,20 @@ public class MiniAccumuloCluster {
     
     FileWriter fileWriter = new FileWriter(siteFile);
     fileWriter.append("<configuration>\n");
-    fileWriter.append("<property><name>" + Property.INSTANCE_DFS_URI.getKey() + "</name><value>file:///</value></property>\n");
-    fileWriter.append("<property><name>" + Property.INSTANCE_DFS_DIR + "</name><value>" + accumuloDir.getAbsolutePath() + "</value></property>\n");
-    fileWriter.append("<property><name>" + Property.INSTANCE_ZK_HOST + "</name><value>localhost:" + zooKeeperPort + "</value></property>\n");
-    fileWriter.append("<property><name>" + Property.MASTER_CLIENTPORT + "</name><value>" + getRandomFreePort() + "</value></property>\n");
-    fileWriter.append("<property><name>" + Property.TSERV_CLIENTPORT + "</name><value>" + getRandomFreePort() + "</value></property>\n");
-    fileWriter.append("<property><name>" + Property.LOGGER_DIR + "</name><value>" + walogDir.getAbsolutePath() + "</value></property>\n");
+    
+    appendProp(fileWriter, Property.INSTANCE_DFS_URI, "file:///", siteConfig);
+    appendProp(fileWriter, Property.INSTANCE_DFS_DIR, accumuloDir.getAbsolutePath(), siteConfig);
+    appendProp(fileWriter, Property.INSTANCE_ZK_HOST, "localhost:" + zooKeeperPort, siteConfig);
+    appendProp(fileWriter, Property.MASTER_CLIENTPORT, "" + getRandomFreePort(), siteConfig);
+    appendProp(fileWriter, Property.TSERV_CLIENTPORT, "" + getRandomFreePort(), siteConfig);
+    appendProp(fileWriter, Property.LOGGER_DIR, walogDir.getAbsolutePath(), siteConfig);
+    appendProp(fileWriter, Property.TSERV_DATACACHE_SIZE, "10M", siteConfig);
+    appendProp(fileWriter, Property.TSERV_INDEXCACHE_SIZE, "10M", siteConfig);
+    appendProp(fileWriter, Property.LOGGER_SORT_BUFFER_SIZE, "50M", siteConfig);
+    appendProp(fileWriter, Property.TSERV_MAXMEM, "50M", siteConfig);
+    appendProp(fileWriter, Property.TSERV_WALOG_MAX_SIZE, "100M", siteConfig);
+    appendProp(fileWriter, Property.TSERV_NATIVEMAP_ENABLED, "false", siteConfig);
+
     for (Entry<String,String> entry : siteConfig.entrySet())
       fileWriter.append("<property><name>" + entry.getKey() + "</name><value>" + entry.getValue() + "</value></property>\n");
     fileWriter.append("</configuration>\n");
@@ -224,7 +238,7 @@ public class MiniAccumuloCluster {
     fileWriter.close();
     
   }
-  
+
   /**
    * Starts Accumulo and Zookeeper processes. Can only be called once.
    * 
