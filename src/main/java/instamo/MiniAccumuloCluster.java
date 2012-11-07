@@ -252,6 +252,7 @@ public class MiniAccumuloCluster {
 
     zooKeeperProcess = exec(ZooKeeperServerMain.class, zooCfgFile.getAbsolutePath());
 
+    // TODO initialization could probably be done in process
     Process initProcess = exec(Initialize.class);
     initProcess.getOutputStream().write("test\n".getBytes());
     initProcess.getOutputStream().write((rootPassword + "\n").getBytes());
