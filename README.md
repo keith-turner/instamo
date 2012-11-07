@@ -5,7 +5,7 @@ Introduction
 -----------
 
 Instamo makes it easy to write some code and run it against a local, transient
-[Accumulo](http://accumulo.apache.org) 1.4 cluster in minutes.  No setup or
+[Accumulo](http://accumulo.apache.org) 1.4 instance in minutes.  No setup or
 installation is required.  This is possible if Java, Git, and Maven are already
 installed by following the steps below.
 
