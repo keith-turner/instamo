@@ -46,7 +46,7 @@ public class AccumuloApp {
     BatchWriter bw = conn.createBatchWriter("foo", 50000000, 60000l, 3);
     Mutation m = new Mutation("r1");
     m.put("cf1", "cq1", "v1");
-    m.put("cf1", "cq2", "v2");
+    m.put("cf1", "cq2", "v3");
     bw.addMutation(m);
     bw.close();
     
