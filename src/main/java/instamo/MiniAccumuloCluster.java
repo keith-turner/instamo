@@ -39,7 +39,8 @@ import org.apache.accumulo.server.util.Initialize;
 import org.apache.zookeeper.server.ZooKeeperServerMain;
 
 /**
- * 
+ * A utility class that will create Zookeeper and Accumulo processes that write all of their data to a single local directory. This class makes it easy to test
+ * code against a real Accumulo instance. Its much more accurate for testing than MockAccumulo, but much slower than MockAccumulo.
  */
 public class MiniAccumuloCluster {
   
@@ -160,6 +161,19 @@ public class MiniAccumuloCluster {
     return process;
   }
 
+  /**
+   * 
+   * @param dir
+   *          An empty or nonexistant temp directoy that Accumulo and Zookeeper can store data in. Creating the directory is left to the user. Java 7, Guava,
+   *          and Junit provide methods for creating temporary directories.
+   * @param rootPassword
+   *          Initial root password for instance.
+   * @param siteConfig
+   *          Any system properties that needs to be set before Accumulo processes are started. These are properties that would normally be placed in
+   *          accumulo-site.xml
+   * @throws IOException
+   */
+
   public MiniAccumuloCluster(File dir, String rootPassword, Map<String,String> siteConfig) throws IOException {
 
     if (dir.exists() && !dir.isDirectory())
@@ -211,6 +225,15 @@ public class MiniAccumuloCluster {
     
   }
   
+  /**
+   * Starts Accumulo and Zookeeper processes. Can only be called once.
+   * 
+   * @throws IOException
+   * @throws InterruptedException
+   * @throws IllegalStateException
+   *           if already started
+   */
+
   public void start() throws IOException, InterruptedException {
     if (zooKeeperProcess != null)
       throw new IllegalStateException("Already started");
@@ -241,13 +264,29 @@ public class MiniAccumuloCluster {
     loggerProcess = exec(LogService.class);
   }
 
+  /**
+   * @return Accumulo instance name
+   */
+
   public String getInstanceName() {
     return "test";
   }
   
+  /**
+   * @return zookeeper connection string
+   */
+
   public String getZookeepers() {
     return "localhost:" + zooKeeperPort;
   }
+
+  /**
+   * Stops Accumulo and Zookeeper processes. If stop is not called, there is a shutdown hook that is setup to kill the processes. Howerver its probably best to
+   * call stop in a finally block as soon as possible.
+   * 
+   * @throws IOException
+   * @throws InterruptedException
+   */
 
   public void stop() throws IOException, InterruptedException {
     if (zooKeeperProcess != null)

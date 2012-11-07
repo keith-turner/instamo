@@ -23,7 +23,7 @@ Purpose
 This project was created while experimenting with creating an implementation
 for [ACCUMULO-14](https://issues.apache.org/jira/browse/ACCUMULO-14).  Instamo
 contains a new implementation of MiniAccumuloCluster that spawns Zookeeper and
-Accumulo processes storing all data in a single local directory.  This purpose
+Accumulo processes storing all data in a single local directory.  The purpose
 of Instamo is to make it extremely simple to use MiniAccumuloCluster.
 MiniAccumuloCluster in Instamo works with Accumulo 1.4.  I plan to work twoards
 having MiniAccumuloCluster be part of Accumulo 1.5.
