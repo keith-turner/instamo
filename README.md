@@ -10,7 +10,7 @@ installation is required.  This is possible if Java, Git, and Maven are already
 installed by following the simple steps below.
 
 ```
-git clone git://github.com/keith-turner/goraci.git
+git clone git://github.com/keith-turner/instamo.git
 cd instamo
 vim src/main/java/instamo/AccumuloApp.java
 mvn package
