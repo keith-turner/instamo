@@ -30,12 +30,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.TimerTask;
 
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.server.logger.LogService;
 import org.apache.accumulo.server.master.Master;
 import org.apache.accumulo.server.tabletserver.TabletServer;
 import org.apache.accumulo.server.util.Initialize;
+import org.apache.accumulo.server.util.time.SimpleTimer;
 import org.apache.zookeeper.server.ZooKeeperServerMain;
 
 /**
@@ -57,6 +59,17 @@ public class MiniAccumuloCluster {
       this.setDaemon(true);
       this.in = new BufferedReader(new InputStreamReader(stream));
       out = new BufferedWriter(new FileWriter(logFile));
+      
+      SimpleTimer.getInstance().schedule(new TimerTask() {
+        @Override
+        public void run() {
+          try {
+            flush();
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+        }
+      }, 1000, 1000);
     }
     
     public synchronized void flush() throws IOException {
@@ -85,6 +98,8 @@ public class MiniAccumuloCluster {
     }
   }
 
+  private File baseDir;
+  private File libDir;
   private File confDir;
   private File zooKeeperDir;
   private File accumuloDir;
@@ -147,6 +162,7 @@ public class MiniAccumuloCluster {
     
     ProcessBuilder builder = new ProcessBuilder(argList);
     
+    builder.environment().put("ACCUMULO_HOME", baseDir.getAbsolutePath());
     builder.environment().put("ACCUMULO_LOG_DIR", logDir.getAbsolutePath());
 
     Process process = builder.start();
@@ -190,6 +206,8 @@ public class MiniAccumuloCluster {
     
     this.rootPassword = rootPassword;
 
+    baseDir = dir;
+    libDir = new File(dir, "lib");
     confDir = new File(dir, "conf");
     accumuloDir = new File(dir, "accumulo");
     zooKeeperDir = new File(dir, "zookeeper");
@@ -201,6 +219,7 @@ public class MiniAccumuloCluster {
     zooKeeperDir.mkdirs();
     logDir.mkdirs();
     walogDir.mkdirs();
+    libDir.mkdirs();
     
     zooKeeperPort = getRandomFreePort();
 
@@ -223,6 +242,8 @@ public class MiniAccumuloCluster {
     appendProp(fileWriter, Property.TSERV_NATIVEMAP_ENABLED, "false", siteConfig);
     // since there is a small amount of memory, check more frequently for majc... setting may not be needed in 1.5
     appendProp(fileWriter, Property.TSERV_MAJC_DELAY, "3", siteConfig);
+    appendProp(fileWriter, Property.GENERAL_CLASSPATHS, libDir.getAbsolutePath(), siteConfig);
+    appendProp(fileWriter, Property.GENERAL_DYNAMIC_CLASSPATHS, libDir.getAbsolutePath(), siteConfig);
 
     for (Entry<String,String> entry : siteConfig.entrySet())
       fileWriter.append("<property><name>" + entry.getKey() + "</name><value>" + entry.getValue() + "</value></property>\n");
