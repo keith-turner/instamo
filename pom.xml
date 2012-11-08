@@ -53,6 +53,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
+        <version>1.2.1</version>
         <configuration>
           <executable>java</executable>
           <arguments>
@@ -64,4 +65,29 @@
       </plugin>
     </plugins>
   </build>
+  <!--a profile for executing map reduce example -->
+  <profiles>
+    <profile>
+      <activation>
+        <property>
+          <name>mapReduce</name>
+        </property>
+      </activation>
+      <build><plugins>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>1.2.1</version>
+          <configuration>
+            <executable>java</executable>
+            <arguments>
+              <argument>-classpath</argument>
+              <classpath/>
+              <argument>instamo.MapReduceExample</argument>
+            </arguments>
+          </configuration>
+        </plugin></plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

@@ -221,6 +221,8 @@ public class MiniAccumuloCluster {
     appendProp(fileWriter, Property.TSERV_MAXMEM, "50M", siteConfig);
     appendProp(fileWriter, Property.TSERV_WALOG_MAX_SIZE, "100M", siteConfig);
     appendProp(fileWriter, Property.TSERV_NATIVEMAP_ENABLED, "false", siteConfig);
+    // since there is a small amount of memory, check more frequently for majc... setting may not be needed in 1.5
+    appendProp(fileWriter, Property.TSERV_MAJC_DELAY, "3", siteConfig);
 
     for (Entry<String,String> entry : siteConfig.entrySet())
       fileWriter.append("<property><name>" + entry.getKey() + "</name><value>" + entry.getValue() + "</value></property>\n");

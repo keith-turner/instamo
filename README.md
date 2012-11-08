@@ -17,6 +17,26 @@ mvn package
 mvn exec:exec
 ```
 
+In addition to a bunch of maven output, you should see the following when
+running mvn exec:exec.  If you see the warning, its ok.  The warning happens
+because the client clode tries to access Accumulo while its starting in the
+background.  Eventually Accumulo is fully up and the client program runs.
+
+```
+[main] WARN  org.apache.accumulo.core.client.impl.ServerClient  - There are no tablet servers: check that zookeeper and accumulo are running.
+r1 cf1:cq1 [] 1352400044419 false v1
+r1 cf1:cq2 [] 1352400044419 false v3
+```
+
+Map Reduce
+----------
+
+Its possible to run local map reduce jobs against the MiniAccumuloCluster instance.   There is an example of this in the source.  The following command will run the map reduce example.
+
+```
+mvn exec:exec -DmapReduce
+```
+
 Purpose
 -------
 
