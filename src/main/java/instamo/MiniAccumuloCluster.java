@@ -247,7 +247,7 @@ public class MiniAccumuloCluster {
     appendProp(fileWriter, Property.TSERV_MAJC_DELAY, "3", siteConfig);
     appendProp(fileWriter, Property.GENERAL_CLASSPATHS, libDir.getAbsolutePath(), siteConfig);
     appendProp(fileWriter, Property.GENERAL_DYNAMIC_CLASSPATHS, libDir.getAbsolutePath(), siteConfig);
-    if (Constants.VERSION.startsWith("1.4"))
+    if (getAccumuloVersion().startsWith("1.4"))
       appendProp(fileWriter, "logger.sort.buffer.size", "50M", siteConfig);
 
     for (Entry<String,String> entry : siteConfig.entrySet())
@@ -304,7 +304,7 @@ public class MiniAccumuloCluster {
     
     masterProcess = exec(Master.class);
     tabletServerProcess = exec(TabletServer.class);
-    if (Constants.VERSION.startsWith("1.4")) {
+    if (getAccumuloVersion().startsWith("1.4")) {
       try {
         loggerProcess = exec(this.getClass().getClassLoader().loadClass("org.apache.accumulo.server.logger.LogService"));
       } catch (Exception ex) {
@@ -349,5 +349,20 @@ public class MiniAccumuloCluster {
     
     for (LogWriter lw : logWriters)
       lw.flush();
+  }
+  
+  public String getAccumuloVersion() {
+    try {
+      // grab the version via reflection.. need to do this because its a constant and would otherwise be inlined
+      return (String) Constants.class.getDeclaredField("VERSION").get(String.class);
+    } catch (IllegalArgumentException e) {
+      throw new RuntimeException(e);
+    } catch (SecurityException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    } catch (NoSuchFieldException e) {
+      throw new RuntimeException(e);
+    }
   }
 }
