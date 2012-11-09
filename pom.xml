@@ -8,7 +8,8 @@
   <name>instamo</name>
   <url>http://maven.apache.org</url>
   <properties>
-  	<accumulo.version>1.4.1</accumulo.version>
+    <accumulo.version>1.4.1</accumulo.version>
+    <maclass>instamo.AccumuloApp</maclass>
   </properties>
   <dependencies>
     <dependency>
@@ -62,7 +63,7 @@
           <arguments>
             <argument>-classpath</argument>
             <classpath/>
-            <argument>instamo.AccumuloApp</argument>
+            <argument>${maclass}</argument>
           </arguments>
         </configuration>
       </plugin>
@@ -76,27 +77,15 @@
           <name>mapReduce</name>
         </property>
       </activation>
-      <build><plugins>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>exec-maven-plugin</artifactId>
-          <version>1.2.1</version>
-          <configuration>
-            <executable>java</executable>
-            <arguments>
-              <argument>-classpath</argument>
-              <classpath/>
-              <argument>instamo.MapReduceExample</argument>
-            </arguments>
-          </configuration>
-        </plugin></plugins>
-      </build>
+      <properties>
+        <maclass>instamo.MapReduceExample</maclass>
+      </properties>
     </profile>
     <profile>
-    	<id>trunk</id>
-		<properties>
-			<accumulo.version>1.5.0-SNAPSHOT</accumulo.version>
-	 	</properties>
+      <id>trunk</id>
+      <properties>
+        <accumulo.version>1.5.0-SNAPSHOT</accumulo.version>
+      </properties>
     </profile>
   </profiles>
 </project>
