@@ -63,7 +63,7 @@ public class AccumuloApp {
       MiniAccumuloCluster la = new MiniAccumuloCluster(tmpDir, "pass1234", new HashMap<String,String>());
       la.start();
     
-      System.out.println("\n   ---- Running Accumulo App\n");
+      System.out.println("\n   ---- Running Accumulo App against accumulo-" + Constants.VERSION + "\n");
 
       run(la.getInstanceName(), la.getZookeepers(), "pass1234", args);
 

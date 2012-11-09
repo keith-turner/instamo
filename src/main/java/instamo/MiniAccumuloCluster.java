@@ -32,8 +32,8 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.TimerTask;
 
+import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.conf.Property;
-import org.apache.accumulo.server.logger.LogService;
 import org.apache.accumulo.server.master.Master;
 import org.apache.accumulo.server.tabletserver.TabletServer;
 import org.apache.accumulo.server.util.Initialize;
@@ -145,7 +145,7 @@ public class MiniAccumuloCluster {
     throw new RuntimeException("Unable to find port");
   }
 
-  private Process exec(Class clazz, String... args) throws IOException {
+  private Process exec(Class<? extends Object> clazz, String... args) throws IOException {
     String javaHome = System.getProperty("java.home");
     String javaBin = javaHome + File.separator + "bin" + File.separator + "java";
     String classpath = System.getProperty("java.class.path");
@@ -179,8 +179,12 @@ public class MiniAccumuloCluster {
   }
 
   private void appendProp(FileWriter fileWriter, Property key, String value, Map<String,String> siteConfig) throws IOException {
-    if (!siteConfig.containsKey(key.getKey()))
-      fileWriter.append("<property><name>" + key.getKey() + "</name><value>" + value + "</value></property>\n");
+    appendProp(fileWriter, key.getKey(), value, siteConfig);
+  }
+
+  private void appendProp(FileWriter fileWriter, String key, String value, Map<String,String> siteConfig) throws IOException {
+    if (!siteConfig.containsKey(key))
+      fileWriter.append("<property><name>" + key + "</name><value>" + value + "</value></property>\n");
   }
 
   /**
@@ -236,7 +240,6 @@ public class MiniAccumuloCluster {
     appendProp(fileWriter, Property.LOGGER_DIR, walogDir.getAbsolutePath(), siteConfig);
     appendProp(fileWriter, Property.TSERV_DATACACHE_SIZE, "10M", siteConfig);
     appendProp(fileWriter, Property.TSERV_INDEXCACHE_SIZE, "10M", siteConfig);
-    appendProp(fileWriter, Property.LOGGER_SORT_BUFFER_SIZE, "50M", siteConfig);
     appendProp(fileWriter, Property.TSERV_MAXMEM, "50M", siteConfig);
     appendProp(fileWriter, Property.TSERV_WALOG_MAX_SIZE, "100M", siteConfig);
     appendProp(fileWriter, Property.TSERV_NATIVEMAP_ENABLED, "false", siteConfig);
@@ -244,6 +247,8 @@ public class MiniAccumuloCluster {
     appendProp(fileWriter, Property.TSERV_MAJC_DELAY, "3", siteConfig);
     appendProp(fileWriter, Property.GENERAL_CLASSPATHS, libDir.getAbsolutePath(), siteConfig);
     appendProp(fileWriter, Property.GENERAL_DYNAMIC_CLASSPATHS, libDir.getAbsolutePath(), siteConfig);
+    if (Constants.VERSION.startsWith("1.4"))
+      appendProp(fileWriter, "logger.sort.buffer.size", "50M", siteConfig);
 
     for (Entry<String,String> entry : siteConfig.entrySet())
       fileWriter.append("<property><name>" + entry.getKey() + "</name><value>" + entry.getValue() + "</value></property>\n");
@@ -299,7 +304,13 @@ public class MiniAccumuloCluster {
     
     masterProcess = exec(Master.class);
     tabletServerProcess = exec(TabletServer.class);
-    loggerProcess = exec(LogService.class);
+    if (Constants.VERSION.startsWith("1.4")) {
+      try {
+        loggerProcess = exec(this.getClass().getClassLoader().loadClass("org.apache.accumulo.server.logger.LogService"));
+      } catch (Exception ex) {
+        throw new RuntimeException(ex);
+      }
+    }
   }
 
   /**
